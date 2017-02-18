@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<module name="dev-can-mx35">
+	<type>Element</type>
+	<classification>Driver</classification>
+
+	<description>
+            <short>i.MX35 FlexCAN Driver</short>
+	        <abstract>
+	                <![CDATA[FlexCAN support driver for the Freescale i.MX35 3DS]]>
+	        </abstract>
+	</description>
+
+	<supports>
+		<availability>
+			<cpu isa="arm">
+			<byteOrder>le</byteOrder>
+			</cpu>
+		</availability>
+	</supports>
+
+	<source available="false">
+		<location type="">.</location>
+	</source>
+	<GroupOwner>hw</GroupOwner>
+	<RuntimeComponent>Neutrino RTOS</RuntimeComponent>
+
+
+	<contents>
+		<component id="can-mx35" generated="true">
+			<location basedir="{cpu}/{endian}"
+				 runtime="true">dev-can-mx35</location>
+		</component>
+	</contents>
+
+	<requires>
+		<part build="false" location="lib/can"/>
+	</requires>
+
+</module>

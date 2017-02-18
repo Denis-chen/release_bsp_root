@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<module name="spi-mx35">
+	<type>Element</type>
+	<classification>Driver</classification>
+
+	<description>
+		<short>mx35 SPI Driver</short>
+	        <abstract>
+		<![CDATA[The Serial Protocol Interface on the mx35 is protocol compatible 
+with the standard Serial Protocol Interface (SPI). The mx35 BSP 
+support for the SPI (spi-mx35) supports Full Duplex communication in 
+Master mode. The SPI provides serial communications between the i.MX35
+CPU core and peripheral devices.]]>
+	        </abstract>
+	</description>
+
+	<supports>
+		<availability>
+			<cpu isa="arm">
+				<byteOrder>le</byteOrder>
+			</cpu>
+		</availability>
+	</supports>
+
+	<source available="false">
+		<location type="">.</location>
+	</source>
+	<GroupOwner>hw</GroupOwner>
+
+	<contents>
+		<component id="spi-mx35" generated="true">
+			<location basedir="{cpu}/dll{.:endian}"
+				 runtime="true">spi-mx35.so</location>
+		</component>
+	</contents>
+
+	<requires>
+		<part build="true" location="lib/spi"/>
+		<part build="false" location="hardware/spi"/>
+	</requires>
+</module>

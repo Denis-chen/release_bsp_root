@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<module name="deva-ctrl-mx35_spdif">
+  <classification>Driver</classification>
+  <description>
+    <short>Audio Driver for the Freescale i.MX35 SPDIF</short>
+    <abstract><![CDATA[
+					The deva-ctrl-mx35_spdif.so shared object is responsible for configuring and operating the Freescale i.MX35 SPDIF under the direct control of the QNX Sound Architecture (io-audio).
+	        ]]></abstract>
+  </description>
+  <supports>
+    <availability>
+      <cpu isa="arm">
+        <byteOrder>le</byteOrder>
+      </cpu>
+    </availability>
+  </supports>
+  <contents>
+    <component id="mx35_spdif" generated="true">
+      <location basedir="nto/arm/dll.le">deva-ctrl-mx35_spdif.so</location>
+    </component>
+  </contents>
+  <requires>
+    <part build="false" location="lib/asound"/>
+    <part build="true" location="lib/dma/imx35v2"/>
+    <part rootMacro="AUDIO_ROOT" build="true" location="services/audio"/>
+  </requires>
+</module>

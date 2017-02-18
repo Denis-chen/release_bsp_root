@@ -1,0 +1,11 @@
+Freescale IMX35 Graphics Driver
+
+The file "imx35.conf" can be used to customize hardware-related
+settings for the devg-imx35.so graphics driver.
+
+imx35.conf contains comments which describe the various settings
+which may be configured.
+
+This driver currently supports the Synchronous Display Controller
+(SDC) of the IMX35.
+

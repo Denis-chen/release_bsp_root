@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<module name="fs-etfs-3dsmx35_2048">
+  <classification>Runtime</classification>
+  <description>
+    <short>ETFS driver for Freescale i.MX35 3DS NAND flash</short>
+    <abstract>
+<![CDATA[
+                The fs-efts-3dsmx35_2048 driver is a NAND flash driver to support ETFS file system for QNX Neutrino on Freescale i.MX35 3DS board.
+                ]]>
+    </abstract>
+  </description>
+  <supports>
+    <availability>
+      <os name="nto">
+        <cpu isa="ppc">
+          <byteOrder>be</byteOrder>
+        </cpu>
+        <cpu isa="mips">
+          <byteOrder>be</byteOrder>
+          <byteOrder>le</byteOrder>
+        </cpu>
+        <cpu isa="sh">
+          <byteOrder>le</byteOrder>
+        </cpu>
+        <cpu isa="arm">
+          <byteOrder>be</byteOrder>
+          <byteOrder>le</byteOrder>
+        </cpu>
+        <cpu isa="x86"/>
+      </os>
+    </availability>
+  </supports>
+  <contents>
+    <component id="etfs" generated="true">
+      <location basedir="nand2048/3dsmx35_2048/arm/le/">fs-etfs-3dsmx35_2048</location>
+    </component>
+  </contents>
+  <requires/>
+</module>

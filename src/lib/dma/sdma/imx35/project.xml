@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<module name="dma-sdma-imx35">
+  <classification>SDK</classification>
+  <description>
+    <short>Freescale i.MX35 DMA library</short>
+    <abstract><![CDATA[
+	                The dma-sdma-imx35 library operates the DMA Controller, and is needed by certain device drivers to perform DMA transactions.
+	        ]]></abstract>
+  </description>
+  <supports>
+    <availability>
+      <cpu isa="arm">
+        <byteOrder>le</byteOrder>
+      </cpu>
+    </availability>
+  </supports>
+  <contents>
+    <component id="SharedObj" generated="true">
+      <location basedir="arm/so.le">		                libdma-sdma-imx35.so		        </location>
+    </component>
+    <component id="SharedArchive" generated="true">
+      <location basedir="arm/so.le">		                libdma-sdma-imx35S.a		        </location>
+    </component>
+  </contents>
+</module>

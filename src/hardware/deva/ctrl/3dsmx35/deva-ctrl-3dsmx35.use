@@ -1,0 +1,4 @@
+%C - Sound driver for the i.MX35 3DS board
+
+This is a DLL of the io-audio system.
+

@@ -1,0 +1,960 @@
+###########################################################################
+#
+# Neutrino 6.4 on the Freescale i.MX35 3DS Board, with an ARM1136 core
+#
+###########################################################################
+#
+# On-board devices:
+# ----------------
+#
+# i.MX35 UART1 / UART2
+#       devc-sermx1 -e -F -c100000000 0x43F90000,45 0x43F94000,32
+#
+# i.MX35 Fast Ethernet controller (FEC)
+#       io-pkt-v4-hc -dmx35 mac=xxxxxxxxxxxx -ptcpip
+#
+# Debug board Ethernet (SMSC LAN9217)
+#       io-pkt-v4-hc -dsmc9118 ioport=0xb6000000,irq=160 -ptcpip
+#
+# i.MX35 3DS Samsung NAND flash (2GB)
+#       fs-etfs-3dsmx35_2048 -m /fs/etfs
+#
+# i.MX35 3DS Spansion flash (64MB)
+#       devf-generic -s0xA0000000,64M
+#
+# i.MX35 USB HS Host
+#       io-usb -d ehci-mx31 ioport=0x53FF4500,irq=35
+#
+# i.MX35 I2C
+#       i2c-mx35
+#
+# i.MX35 Audio device (i.MX35 SSI with AK4647 codec)
+#       io-audio -d 3dsmx35
+#
+# i.MX35 Audio device (i.MX35 SSI with SGTL5000 codec)
+#	io-audio -d mx-mx35pdk 
+#	ssibase=0x43fa0000,tevt=29,tchn=1,revt=28,rchn=2,rate=48000,mixer=mclk=12288000
+#
+# i.MX35 Synchronous Display Controller
+#       io-display -dvid=0,did=0
+#
+# i.MX35 FlexCAN
+#       dev-can-mx35 can0
+#
+# i.MX35 Enhanced Secured Digital Host Controller version 2 (eSDHCv2)
+#       devb-mmcsd-3dsmx35 cam quiet
+#
+# i.MX35 ATA controller
+#       devb-eide eide ioport=0x500200a0,irq=15,stride=4,noslave
+#
+# TSC2007 Touchscreen Controller
+#       devi-tsc2007 tsc2007 abs -s799,479
+#
+# MC13892 Touchscreen Controller
+#       devi-mc13892 touch abs -s799,479
+#
+# Real Time Clock (RTC) on-chip MC9S08DZ60
+#       rtc hw
+#
+###########################################################################
+
+# For loading with the QNX IPL, uncomment below
+# [image=0x81000000]
+# [virtual=armle,binary +compress] .bootstrap = {
+
+# Default load using RedBoot
+[image=0x80100000]
+[virtual=armle,raw +compress] .bootstrap = {
+	# Pass one or more of these options to startup below:
+	#  -a  for ATA support
+	#  -s  for SPI support
+	#  -c  for I2C support
+	#  -U2 for USB HS host support
+	#  -n  for NAND support
+	#  -E  for FEC support
+	#  -L  for LCD support
+	#  -C  for CAN support
+	#  -t  for TSC2007 support
+	# Note: Use TSC2007 touchscreen if MC13892 power management chip is not found on 
+ 	#       CPU board (corner opposite serial number).
+	# Note: CAN and USB HS host can't be supported at the same time.
+	
+	startup-3dsmx35 -cE -v
+
+	PATH=/proc/boot procnto-v6 -v
+}
+[+script] .script = {
+    # Initialise the console
+    procmgr_symlink ../../proc/boot/libc.so.3 /usr/lib/ldqnx.so.2
+
+    devc-sermx1 -e -F -c100000000 0x43F90000,45 0x43F94000,32
+    reopen
+    display_msg Welcome to Neutrino 6.4.0 on the Freescale i.MX35 3DS Board
+
+    # Start some common servers
+    slogger &
+    pipe &
+
+    #######################################################################
+    ## I2C driver
+    ##  - startup-3dsmx35 -c 
+    #######################################################################
+    display_msg Starting I2C driver...
+    i2c-mx35
+    waitfor /dev/i2c0
+
+    #######################################################################
+    ## PMIC(MC13892) power management support utility
+    ##  - It requires I2C driver 
+    #######################################################################
+    display_msg Configure power management chip for SGTL5000 codec and FEC ...
+    pmic_mc13892_cfg
+
+    #######################################################################
+    ## RTC driver
+    ##  - startup-3dsmx35 -c (RTC requires I2C driver)
+    #######################################################################
+    # display_msg Setting OS clock from on-board RTC...
+    # rtc hw
+
+    #######################################################################
+    ## NETWORK drivers
+    ##  (1) MX35 FEC on the Personality board
+    ##  (2) SMSC LAN9217 on the Debug board
+    ##  - startup-3dsmx35 -cE (FEC NETWORK requires I2C driver)
+    ##  - MX35 FEC required running PMIC power management support utility first
+    ##  - replace 001122334455 with your MAC address for FEC NETWORK
+    #######################################################################
+    # display_msg Starting Personality board Ethernet with TCP/IP stack...
+    # io-pkt-v4-hc -dmx35 mac=001122334455 -ptcpip
+    # display_msg Starting Debug board Ethernet with TCP/IP stack...
+    # io-pkt-v4-hc -dsmc9118 ioport=0xb6000000,irq=160 -ptcpip
+
+    #######################################################################
+    ## REMOTE_DEBUG (gdb or Momentics)
+    ##  - refer to the help documentation for the gdb, qconn and the IDE
+    ##    for more information on remote debugging
+    ##  - the commands shown require that NETWORK is enabled too
+    #######################################################################
+    # devc-pty
+    # waitfor /dev/ptyp0 4
+    # waitfor /dev/socket 4
+    # qconn port=8000
+
+    #######################################################################
+    ## NOR FLASH driver
+    #######################################################################
+    # display_msg Starting Flash driver...
+    # devf-generic -s0xA0000000,64M
+
+    #######################################################################
+    ## ETFS NAND driver
+    ##  - startup-3dsmx35 -n
+    ##  - when starting the driver for the first time,
+    ##    use -e to erase and create filesystem
+    #######################################################################
+    # display_msg Starting ETFS driver...
+    # fs-etfs-3dsmx35_2048 -e -m /fs/etfs
+    # fs-etfs-3dsmx35_2048 -m /fs/etfs
+    
+    #######################################################################
+    ## USB HOST (HS) controller driver
+    ##  - startup-3dsmx35 -U2
+    #######################################################################
+    # display_msg Starting USB Host driver...
+    # io-usb -d ehci-mx31 ioport=0x53FF4500,irq=35
+    # waitfor /dev/io-usb/io-usb 4
+
+    #######################################################################
+    ## AUDIO driver
+    ##  - startup-3dsmx35 -c (AUDIO requires I2C driver)
+    ##  - It required running PMIC power management support utility first
+    #######################################################################
+    # display_msg Starting SSI Audio driver for AK4647...
+    # io-audio -d 3dsmx35
+    # display_msg Starting SPDIF driver...
+    # io-audio -d mx35_spdif
+    
+    display_msg Starting SSI Audio driver for SGTL5000...
+    io-audio -d mx-mx35pdk ssibase=0x43fa0000,tevt=29,tchn=1,revt=28,rchn=2,rate=48000,mixer=mclk=12288000
+
+    #######################################################################
+    ## GRAPHICS driver
+    ##  - startup-3dsmx35 -cL (GRAPHICS requires I2C driver)
+    #######################################################################
+    # display_msg Starting Graphics driver...
+    # io-display -dvid=0,did=0
+    # waitfor /dev/io-display 10
+
+    #######################################################################
+    ## TOUCHSCREEN driver
+    ##  - startup-3dsmx35 -c (TOUCHSCREEN requires I2C driver)
+    ##  - calibrate the Touchscreen using gf-calib before using the
+    ##    Touchscreen driver
+    ##  - Use mc13892 driver for i.mx35pdk board (identify, look for 
+    ##    MC13892 chip on CPU board.
+    ##  - The TSC2007 requires the startup -t switch to configure its 
+    ##    interrupt.
+    #######################################################################
+    # display_msg Starting Touchscreen driver...
+    # devi-tsc2007 tsc2007 abs -s799,479
+    # devi-mc13892 touch abs -s799,479
+
+    #######################################################################
+    ## CAN driver
+    ##  - startup-3dsmx35 -C
+    #######################################################################
+    # display_msg Starting CAN driver...
+    # dev-can-mx35 can0
+
+    #######################################################################
+    ## SD memory card driver
+    #######################################################################
+    # display_msg Starting SD memory card driver...
+    # devb-mmcsd-3dsmx35 cam quiet
+
+    #######################################################################
+    ## EIDE driver
+    ##  - startup-3dsmx35 -a
+    #######################################################################
+    # display_msg Starting ATA driver...
+    # devb-eide eide ioport=0x500200a0,irq=15,stride=4,noslave
+
+    # Start the main shell
+    SYSNAME=nto
+    TERM=qansi
+    HOME=/
+    PATH=:/proc/boot:/bin:/usr/bin:/opt/bin
+    LD_LIBRARY_PATH=:/proc/boot:/lib:/usr/lib:/lib/dll:/opt/lib
+
+    [+session] ksh &
+}
+
+# Redirect console messages
+[type=link] /bin/sh=/proc/boot/ksh
+[type=link] /dev/console=/dev/ser1
+[type=link] /tmp=/dev/shmem
+
+# Programs require the runtime linker (ldqnx.so) to be at a fixed location
+
+# Shared libraries
+libc.so
+libm.so.2
+
+###########################################################################
+## uncomment for legacy binary support (Momentics 6.3.2 and earlier)  
+###########################################################################
+# libc.so.2
+
+###########################################################################
+## uncomment for NETWORK drivers
+###########################################################################
+# devn-mx35.so
+# devn-smc9118.so
+# devnp-shim.so
+# libsocket.so
+
+###########################################################################
+## uncomment for USB HOST driver
+###########################################################################
+# devu-ehci-mx31.so
+# libusbdi.so
+
+###########################################################################
+## uncomment for BLOCK drivers (SD, EIDE, USB mass storage)
+###########################################################################
+# libcam.so
+# io-blk.so
+# cam-disk.so
+# cam-cdrom.so
+# fs-qnx4.so
+# fs-dos.so
+
+###########################################################################
+## AUDIO driver
+###########################################################################
+# deva-ctrl-3dsmx35.so
+deva-ctrl-mx-mx35pdk.so
+# deva-ctrl-mx35_spdif.so
+deva-util-restore.so
+libasound.so.2
+
+###########################################################################
+## uncomment for GRAPHICS driver
+###########################################################################
+# devg-imx35.so
+# devg-soft3d.so
+# libGLES_CM.so.1
+# libOpenVG-G12.so
+# libgf.so.1
+# libffb.so.2
+
+###########################################################################
+## uncomment for Image Loading
+###########################################################################
+# img_codec_bmp.so
+# img_codec_gif.so
+# img_codec_jpg.so
+# img_codec_png.so
+# img_codec_sgi.so
+# img_codec_tga.so
+
+###########################################################################
+## uncomment for Font loading
+###########################################################################
+# libFF-T2K.so.2
+
+###########################################################################
+## SDMA
+###########################################################################
+libdma-sdma-imx35.so
+
+# Executables
+[data=c]
+devc-sermx1
+
+###########################################################################
+## uncomment for NETWORK driver
+###########################################################################
+# io-pkt-v4
+# io-pkt-v4-hc
+# nicinfo
+# ping
+# fs-nfs2
+# ifconfig
+# dhcp.client
+
+###########################################################################
+## uncomment for REMOTE_DEBUG
+###########################################################################
+# qconn
+# devc-pty
+# /usr/bin/pdebug=pdebug
+
+###########################################################################
+## uncomment for ETFS driver
+###########################################################################
+# fs-etfs-3dsmx35_2048
+# etfsctl
+
+###########################################################################
+## uncomment for FLASH driver
+###########################################################################
+# devf-generic
+# flashctl
+
+###########################################################################
+## uncomment for USB HOST driver
+###########################################################################
+# io-usb
+# usb
+
+###########################################################################
+## uncomment for USB mass storage support
+###########################################################################
+# devb-umass
+
+###########################################################################
+## I2C driver
+###########################################################################
+i2c-mx35
+
+###########################################################################
+## uncomment for RTC
+###########################################################################
+# rtc
+# date
+
+###########################################################################
+## AUDIO driver
+###########################################################################
+io-audio
+wave
+waverec
+mix_ctl
+
+###########################################################################
+## Power management utility
+###########################################################################
+pmic_mc13892_cfg
+
+###########################################################################
+## uncomment for GRAPHICS driver
+###########################################################################
+# io-display
+#
+# /etc/system/config/display.conf={
+# device \{
+#         drivername=imx35
+#         vid=0
+#         did=0
+#         modeopts=/etc/system/config/imx35.conf
+#         display \{
+#                 xres=800
+#                 yres=480
+#                 refresh=60
+#                 pixel_format=rgb565
+#         \}
+# \}
+# }
+
+# /etc/system/config/imx35.conf=imx35.conf
+# /etc/system/config/img.conf=${QNX_TARGET}/etc/system/config/img.conf
+
+###########################################################################
+## uncomment for TOUCHSCREEN driver
+###########################################################################
+# devi-tsc2007
+# devi-mc13892
+
+###########################################################################
+## uncomment for CAN driver
+###########################################################################
+# dev-can-mx35
+# canctl
+
+###########################################################################
+## uncomment for SD memory card driver
+###########################################################################
+# devb-mmcsd-3dsmx35
+
+###########################################################################
+## uncomment for EIDE driver
+###########################################################################
+# devb-eide
+
+###########################################################################
+## uncomment for GF binaries
+###########################################################################
+# vsync
+
+###########################################################################
+## general commands
+###########################################################################
+cp
+ls
+cat
+ksh
+pipe
+pidin
+uname
+slogger
+sloginfo
+slay
+mount
+umount
+shutdown
+
+###########################################################################
+## END OF BUILD SCRIPT
+###########################################################################
+
+###########################################################################
+##
+## CONFIGURING ON-BOARD SUPPORTED HARDWARE:
+##
+##-------------------------------------------------------------------------
+##
+## SERIAL:      MX35 UART1,2
+##    example buildfile commands:
+##        devc-sermx1 -e -F -c100000000 0x43F90000,45 0x43F94000,32
+##        waitfor /dev/ser1
+##        reopen /dev/ser1
+##
+##    required binaries:
+##        devc-sermx1
+##
+##-------------------------------------------------------------------------
+##
+## NETWORK:     [1] MX35 FEC (Personality board)
+##              [2] SMSC LAN9118 (Debug board)
+##
+##    example buildfile commands:
+##        io-pkt-v4-hc -dmx35 mac=001122334455 -ptcpip
+##        io-pkt-v4-hc -dsmc9118 ioport=0xb6000000,irq=160 -ptcpip
+##
+##    required libraries:
+##        devn-mx35.so
+##        devn-smc9118.so
+##        devnp-shim.so
+##        libsocket.so
+##
+##    required binaries:
+##        io-pkt-v4
+##        ifconfig
+##        nicinfo
+##        ping
+##
+##-------------------------------------------------------------------------
+##
+## NOR FLASH:   64MB Spansion Flash (S29GL512N)
+##    example buildfile commands:
+##        devf-generic -s0xA0000000,64M
+##
+##    required binaries:
+##        devf-generic
+##        flashctl
+##
+##    example extra commands:
+##      # creating a flash partition
+##      # the 8MB offset leaves space for RedBoot and OS image
+##      # 1. erase a section of the flash
+##        flashctl -p/dev/fs0 -o8M -l56M -ve
+##      # 2. format the new partition
+##        flashctl -p/dev/fs0p0 -o8M -l56M -vf
+##      # 3. slay, then restart the driver to mount the new partition
+##        slay devf-generic
+##        devf-generic -s0xA0000000,64M
+##      # 4. you should find a /fs0p1 directory automounted
+## 
+##-------------------------------------------------------------------------
+## 
+## NAND FLASH:  2GB SAMSUNG NAND (K9LAG08U0M)
+##    example buildfile commands:
+##      # erase and create filesystem (use first time)
+##        fs-etfs-3dsmx35_2048 -e -m /fs/etfs
+##      # start and mount an existing filesystem
+##        fs-etfs-3dsmx35_2048 -m /fs/etfs
+##
+##    required binaries:
+##        fs-etfs-3dsmx35_2048
+##        etfsctl
+## 
+##-------------------------------------------------------------------------
+##
+## USB:         USB (HS) EHCI
+##    example buildfile commands:
+##        io-usb -d ehci-mx31 ioport=0x53FF4500,irq=35
+##        waitfor /dev/io-usb/io-usb 4
+##
+##    required libraries:
+##        devu-ehci-mx31.so
+##        libusbdi.so
+##
+##    required binaries:
+##        io-usb
+##        usb
+##
+##-------------------------------------------------------------------------
+## 
+## IIC:         i.MX35 IIC
+##    example buildfile commands:
+##        i2c-mx35
+##
+##    required binaries:
+##        i2c-mx35
+##
+##-------------------------------------------------------------------------
+##
+## AUDIO:       i.MX35 audio driver
+##    example buildfile commands:
+##    For AK4647 codec
+##        io-audio -d 3dsmx35
+##    For SGTL5000 codec
+##        io-audio -d mx-mx35pdk
+##    For SPDIF
+##        io-audio -d mx35_spdif
+##
+##    required libraries:
+##        deva-ctrl-mx-mx35pdk.so
+##        deva-ctrl-3dsmx35.so
+##        deva-ctrl-mx35_spdif.so
+##        libasound.so
+##        libdma-sdma-imx35.so
+##
+##    required binaries:
+##        io-audio
+##        pmic_mc13892_cfg # required for mx35pdk board with sgtl5000 codec
+##
+##-------------------------------------------------------------------------
+##
+## GRAPHICS:    i.MX35 Synchronous Display Controller
+##    example buildfile commands:
+##        io-display -dvid=0,did=0
+##
+##    required configuration files:
+##        /etc/system/config/display.conf
+##        /etc/system/config/imx35.conf
+##
+##    required libraries:
+##        devg-imx35.so
+##        devg-soft3d.so
+##        libGLES_CM.so.1
+##        libOpenVG-G12.so
+##        libffb.so.2
+##        libm.so.2
+##        libdisputil.so
+##
+##    required binaries:
+##        io-display
+##
+##------------------------------------------------------------------------
+##
+## CAN:         i.MX35 FlexCAN
+##    example buildfile commands:
+##        dev-can-mx35 can0
+##
+##    required binaries:
+##        dev-can-mx35
+##        canctl
+##
+##------------------------------------------------------------------------
+##
+## SD:          i.MX35 Enhanced Secured Digital Host Controller version 2
+##    example buildfile commands:
+##        devb-mmcsd-3dsmx35 cam quiet
+##
+##    required libraries:
+##        libcam.so
+##        cam-disk.so
+##        io-blk.so
+##
+##    required binaries:
+##        devb-mmcsd-3dsmx35
+##
+##    extra libraries:
+##        fs-dos.so (for DOS/FAT filesystem support)
+##        fs-ext2.so (for Linux ext2 filesystem support)
+##        fs-qnx4.so (for QNX4 filesystem support)
+##
+##    extra utilities:
+##        mount
+##        umount
+##
+##-------------------------------------------------------------------------
+## 
+## TOUCHSCREEN: TSC2007 Touchscreen Controller
+##    example buildfile commands:
+##        devi-tsc2007 tsc2007 abs -s799,479
+##		for the i.MX35ds3
+##
+##    required configuration files:
+##      # calibration file configured by gf-calib
+##        /etc/system/trap/calib.localhost
+##
+##    required binaries:
+##        devi-tsc2007
+##        or 
+##        devi-mc13892
+##
+##-------------------------------------------------------------------------
+## 
+## EIDE:        i.MX35 ATA Controller
+##    example buildfile commands:
+##        devb-eide eide ioport=0x500200a0,irq=15,stride=4,noslave
+##
+##    required libraries:
+##        libcam.so
+##        cam-disk.so
+##        io-blk.so
+##
+##    required binaries:
+##        devb-eide
+##
+##    extra libraries:
+##        fs-dos.so (for DOS/FAT filesystem support)
+##        fs-ext2.so (for Linux ext2 filesystem support)
+##        fs-qnx4.so (for QNX4 filesystem support)
+##
+##    extra utilities:
+##        mount
+##        umount
+##
+##-------------------------------------------------------------------------
+##
+## RTC:         MC9S08DZ60
+##    example commands:
+##        rtc hw (set OS clock from RTC)
+##        rtc -s hw (set RTC from OS clock)
+##
+##    required binaries:
+##        rtc
+##
+##    extra utilities:
+##        date
+##
+###########################################################################
+
+
+###########################################################################
+#
+# Interrupt Assignments
+# ---------------------
+#
+# vector:	0 - 1
+# trigger:	N/A
+# device:	Reserved
+#
+# vector:	2
+# trigger:	N/A
+# device:	1-Wire Module
+#
+# vector:	3
+# trigger:	N/A
+# device:	I2C3 Module
+#
+# vector:	4
+# trigger:	N/A
+# device:	I2C2 Module
+#
+# vector:	5
+# trigger:	N/A
+# device:	Reserved
+#
+# vector:	6
+# trigger:	N/A
+# device:	RTIC
+#
+# vector:	7
+# trigger:	N/A
+# device:	ESDHC1 Module
+#
+# vector:	8
+# trigger:	N/A
+# device:	ESDHC2 Module
+#
+# vector:	9
+# trigger:	N/A
+# device:	ESDHC3 Module
+#
+# vector:	10
+# trigger:	N/A
+# device:	I2C1 Module
+#
+# vector:	11
+# trigger:	N/A
+# device:	SSI1 Module
+#
+# vector:	12
+# trigger:	N/A
+# device:	SSI2 Module
+#
+# vector:	13
+# trigger:	N/A
+# device:	CSPI2 Module
+#
+# vector:	14
+# trigger:	N/A
+# device:	CSPI1 Module
+#
+# vector:	15
+# trigger:	N/A
+# device:	ATA Controller
+#
+# vector:	16
+# trigger:	N/A
+# device:	GPU2D
+#
+# vector:	17
+# trigger:	N/A
+# device:	ASRC Module
+#
+# vector:	18
+# trigger:	N/A
+# device:	UART3 Module
+#
+# vector:	19
+# trigger:	N/A
+# device:	IIM Module
+#
+# vector:	20
+# trigger:	N/A
+# device:	Reserved
+#
+# vector:	21
+# trigger:	N/A
+# device:	Reserved
+#
+# vector:	22
+# trigger:	N/A
+# device:	RNGC Module
+#
+# vector:	23
+# trigger:	N/A
+# device:	Combined IRQ of PMU and EVTMON Modules
+#
+# vector:	24
+# trigger:	N/A
+# device:	KPP Module
+#
+# vector:	25
+# trigger:	N/A
+# device:	RTC Module
+#
+# vector:	26
+# trigger:	N/A
+# device:	PWM Module
+#
+# vector:	27
+# trigger:	N/A
+# device:	EPIT2 Module
+#
+# vector:	28
+# trigger:	N/A
+# device:	EPIT1 Module
+#
+# vector:	29
+# trigger:	N/A
+# device:	GPT Module
+#
+# vector:	30
+# trigger:	N/A
+# device:	Power Fail
+#
+# vector:	31
+# trigger:	N/A
+# device:	CCM
+#
+# vector:	32
+# trigger:	N/A
+# device:	UART2 Module
+#
+# vector:	33
+# trigger:	N/A
+# device:	NANDFC
+#
+# vector:	34
+# trigger:	N/A
+# device:	SDMA
+#
+# vector:	35
+# trigger:	N/A
+# device:	USB HS
+#
+# vector:	36
+# trigger:	N/A
+# device:	Reserved
+#
+# vector:	37
+# trigger:	N/A
+# device:	USB OTG
+#
+# vector:	38
+# trigger:	N/A
+# device:	Reserved
+#
+# vector:	39
+# trigger:	N/A
+# device:	MSHC
+#
+# vector:	40
+# trigger:	N/A
+# device:	ESAI
+#
+# vector:	41
+# trigger:	N/A
+# device:	IPU Error interrupt
+#
+# vector:	42
+# trigger:	N/A
+# device:	IPU Function interrupt
+#
+# vector:	43
+# trigger:	N/A
+# device:	CAN-1
+#
+# vector:	44
+# trigger:	N/A
+# device:	CAN-2
+#
+# vector:	45
+# trigger:	N/A
+# device:	UART1 Module
+#
+# vector:	46
+# trigger:	N/A
+# device:	MLB Module
+#
+# vector:	47
+# trigger:	N/A
+# device:	SPDIF
+#
+# vector:	48
+# trigger:	N/A
+# device:	Combined IRQ of ECT0 and ECT1
+#
+# vector:	49
+# trigger:	N/A
+# device:	SCC module SCM interrupt
+#
+# vector:	50
+# trigger:	N/A
+# device:	SCC module SMN interrupt
+#
+# vector:	51
+# trigger:	N/A
+# device:	GPIO2 Module
+#
+# vector:	52
+# trigger:	N/A
+# device:	GPIO1 Module
+#
+# vector:	53
+# trigger:	N/A
+# device:	Reserved
+#
+# vector:	54
+# trigger:	N/A
+# device:	Reserved
+#
+# vector:	55
+# trigger:	N/A
+# device:	WDOG Module
+#
+# vector:	56
+# trigger:	N/A
+# device:	GPIO3 Module
+#
+# vector:	57
+# trigger:	N/A
+# device:	FEC
+#
+# vector:	58
+# trigger:	N/A
+# device:	External Interrupt 5 (power management)
+#
+# vector:	59
+# trigger:	N/A
+# device:	External Interrupt 4 (Temper)
+#
+# vector:	60
+# trigger:	N/A
+# device:	External Interrupt 3 (sensor)
+#
+# vector:	61
+# trigger:	N/A
+# device:	External Interrupt 2 (sensor)
+#
+# vector:	62
+# trigger:	N/A
+# device:	External Interrupt 1 (WDOG)
+#
+# vector:	63
+# trigger:	N/A
+# device:	External Interrupt 0 (TV)
+#
+###########################################################################
+#
+# Cascaded GPIO1 Interrupt
+# ------------------------------------------------
+#
+# vector:	64 - 95
+# trigger:	N/A
+# device:	Unused
+#
+# Cascaded GPIO2 Interrupt
+# ------------------------------------------------
+#
+# vector:	96 - 127
+# trigger:	N/A
+# device:	Unused
+# interrupt 96 MC13892 touchscreen 
+#
+# Cascaded GPIO3 Interrupt
+# ------------------------------------------------
+#
+# vector:	128 - 159
+# trigger:	N/A
+# device:	Unused
+#
+##########################################################################

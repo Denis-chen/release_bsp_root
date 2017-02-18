@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<module name="devn-smc9118">
+	<type>Element</type>
+	<classification>Driver</classification>
+
+	<description>
+	        <short>Driver for SMC9118 Ethernet controllers</short>
+	        <abstract>
+	                <![CDATA[The devn-smc9118.so driver controls SMC9118 compatible Ethernet adapters.]]>
+	        </abstract>
+	</description>
+
+	<supports>
+		<availability>
+			<cpu isa="sh">
+				<byteOrder>le</byteOrder>
+			</cpu>
+		</availability>
+	</supports>
+
+	<source available="false">
+		<location type="">.</location>
+	</source>
+	<GroupOwner>hw</GroupOwner>
+	<RuntimeComponent>Neutrino RTOS</RuntimeComponent>
+
+
+	<contents>
+		<component id="smc9118" generated="true">
+			<location basedir="{cpu}/dll{.:endian}"
+				 runtime="true">devn-smc9118.so</location>
+		</component>
+	</contents>
+
+	<requires>
+		<part build="true" location="lib/drvr"/>
+		<part build="false" location="hardware/devn"/>
+	</requires>
+
+</module>

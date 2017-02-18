@@ -1,0 +1,4 @@
+define PINFO
+PINFO DESCRIPTION=SMC 9118 ethernet driver
+endef
+EXTRA_CCDEPS+= $(SECTION_ROOT)/smc.h

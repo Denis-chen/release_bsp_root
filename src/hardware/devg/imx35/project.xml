@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<module name="devg-imx35">
+  <classification>Driver</classification>
+  <description>
+    <short>Graphics Driver for the FreeScale IMX35 EVB</short>
+    <abstract><![CDATA[
+				The devg-imx35 shared object is responsible for configuring and operating the Synchronous Display Controller on the IMX35 IPU.
+	        ]]></abstract>
+  </description>
+  <supports>
+    <availability>
+      <cpu isa="arm">
+        <byteOrder>le</byteOrder>
+      </cpu>
+    </availability>
+  </supports>
+  <contents>
+    <component id="imx35" generated="true">
+      <location basedir="nto/arm/dll.le">devg-imx35.so</location>
+    </component>
+    <component id="imx35.conf" generated="false">
+      <location basedir="">usr/photon/config</location>
+      <location basedir="">imx35.conf</location>
+    </component>
+  </contents>
+  <requires>
+    <part build="true" location="lib/ffb"/>
+    <part build="true" location="lib/disputil"/>
+    <part build="false" location="lib/openvg"/>
+    <part build="false" location="hardware/devg"/>
+  </requires>
+</module>

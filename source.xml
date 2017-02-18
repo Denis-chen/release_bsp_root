@@ -1,0 +1,19 @@
+<!-- Unless otherwise specified, values/attributes are free-form strings -->
+<!-- type is currently either BSP or SourceOnly -->
+<sourcePackage type="BSP" id="bsp-freescale-i.mx35">
+    <title>Freescale i.MX35</title>
+    <release>latest</release>
+    <maturity>Development Build</maturity>
+    <license>QDL and Apache II</license>
+    <startup>startup-3dsmx35</startup> 
+    <ipl>ipl-3dsmx35</ipl>
+    <description> This package contains the source and build files for targeting QNX/Neutrino on the Freescale i.MX35 3-stack reference board.</description>
+    <vendor>QNX Software Systems</vendor>
+    <qnxTargetVersion>6.4.0</qnxTargetVersion>
+    <qnxTargetCPU variant="armle">ARM</qnxTargetCPU>
+    <!-- type is currently only import, will be extended in the future. -->
+    <bsp type="import">
+	    <import>src/hardware/startup/boards/3dsmx35/build</import>
+        <imageCombine iplEnable="true" iplFileName="ipl-3dsmx35" iplPadSize="0x4000" finalEnable="true" finalOffset="0x0" finalFormat="binary" />
+    </bsp>
+</sourcePackage>

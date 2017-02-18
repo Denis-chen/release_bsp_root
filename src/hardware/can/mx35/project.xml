@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<module name="dev-can-mx35">
+  <classification>Driver</classification>
+  <description>
+    <short>i.MX35 FlexCAN Driver</short>
+    <abstract><![CDATA[
+	                FlexCAN support driver for the Freescale i.MX35 3DS
+	        ]]></abstract>
+  </description>
+  <supports>
+    <availability>
+      <cpu isa="arm">
+        <byteOrder>le</byteOrder>
+      </cpu>
+    </availability>
+  </supports>
+  <contents>
+    <component id="can-mx35" generated="true">
+      <location basedir="arm/le">dev-can-mx35</location>
+    </component>
+  </contents>
+  <requires>
+    <part build="false" location="lib/can"/>
+  </requires>
+</module>

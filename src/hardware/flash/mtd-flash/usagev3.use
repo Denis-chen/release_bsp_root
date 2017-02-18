@@ -1,0 +1,80 @@
+%C	- Fast Flash File System v3 (POSIX compatible)
+
+%C	[-aclrvV] [-b priority] [-f verifylevel] [-i index]
+	[-m mountover] [-p backgroundpercent[,superlimit]]
+	[-s baseaddress[,windowsize[,arrayoffset[,arraysize[,unitsize[,buswidth[,interleave]]]]]]]
+	[-t threads] [-u updatelevel] [-w buffersize]
+
+Options:
+
+ -a              disables all automounting/enumeration of partitions
+ -A              all partitions are resmgr_attach() with the AFTER flag.
+ -E              do not daemonize and exit on EBADFSYS with partition num + 1
+ -l              list available flash databases and exit
+ -r              enable fault recovery of dangling extents chains, partial
+                 reclaims, dirty extent headers and damaged extent pointers
+ -R              mount read-only
+ -v              display verbose info
+ -V              display file system and MTD version information
+ -b priority     enable background reclaim at priority
+                 (low and high are system dependant)
+ -f verifylevel  enable flash verify (def.=0, 0=meta, write=1, erase=2, all=3) 
+ -i arrayindex[,partindex]
+                 set first array index and first partition index for multiple
+                 drivers (def.=0,0 (for /fs0p0), min=0, max=15)
+ -m mountover
+                 override default mountpoints assigned to file systems 
+                 formatted with an empty (ie. "") mountpoint, mountover can
+                 include two %X format specifiers (as in printf) for the socket
+                 index and the partition index respectively
+                 (def.=/fs%Xp%X)
+ -p backgroundpercent[,superlimit]
+                 set parameters like background reclaim percentage trigger
+                 for stale space over free space, and superseded extent limit
+                 before reclaim (def.=100,16)
+ -s baseaddress[,windowsize[,arrayoffset[,arraysize[,unitsize][,buswidth[,interleave]]]]]
+                 set socket options (normally base physical address, window
+                 size, array offset, array size, unit size, bus width and 
+                 inter-leave). But the format is left flexible for socket 
+                 services with customized drivers
+ -t threads      set number of threads (def.=2, min=1, max=100)
+ -u updatelevel  set time Update Level (def.=0, 0=never, 1=file, 2=parent)
+ -w buffersize   set append buffer size (def.=512, 0=disable)
+ -L limit        set flash program retry limit
+ -e index        enumerate partitions only, automount the first <index> partitions.
+ -d log          set log method
+ -k blksz        set extent cache block size, default is 128k
+ -o file_max     set the maximum numer of files to cache, default is 64
+
+Examples:
+
+%C	-w0 
+
+Starts a flash filesystem with no append buffering.
+
+%C	-b5 -u2 -r 
+
+Starts a flash filesystem with background reclaim process enabled and
+most posix semantics with an initial fault recovery when automounting.
+
+Mountpoints:
+
+This is for the default mountpoint index...
+
+/fs0p0       structured flash file system mountpoint
+
+/dev/fs0     socket mount mountpoint
+/dev/fs0p0   raw partition mountpoint
+
+%C -e 2 
+
+Starts the flash filesystem, automounting /dev/fs0p0, /dev/fs0p1, and /dev/fs0p2.  Any
+remaining partitions are only enumerated (entries created under /dev, but
+no mounted filesystem).
+
+
+
+Notes:
+
+Hard links and access times are not supported with the flash file system.
+Symbolic links, modification and change times are supported.

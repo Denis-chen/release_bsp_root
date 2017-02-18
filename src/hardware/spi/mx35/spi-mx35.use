@@ -1,0 +1,17 @@
+%C Driver for mx35 SPI
+
+Syntax:
+  spi-master -d mx35 [option[,option ...]] ... &
+
+Options (to override autodetected defaults):
+
+  base=address        Base address of CSPI controller, default 0x43fa4000
+  irq=num             IRQ of the interface, default 14
+  clock=num           CSPI clock, default 66500000 Hz
+  loopback            Set internal loopback for test
+  waitstate=num       Set number of waitstates between xfers, default=0
+  burst               Enable SPI burst transmit mode(Only support 8, 16, 32bits word length)
+
+Examples:
+  # Start SPI driver with base address, IRQ and waitstates
+  spi-master -d mx35 base=0x43fa4000,irq=14,waitstate=2,burst

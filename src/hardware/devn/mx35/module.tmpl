@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<module name="devn-mx35">
+	<type>Element</type>
+	<classification>Driver</classification>
+
+        <description>
+                <short>Driver for Freescale MX35 FEC</short>
+                <abstract>
+                        <![CDATA[The devn-mx35.so driver controls Freescale MX35 10/100 Fast Ethernet Controllers.]]>
+                </abstract>
+        </description>
+
+	<supports>
+		<availability>
+			<cpu isa="arm">
+				<byteOrder>le</byteOrder>
+			</cpu>
+			<cpu isa="x86"/>
+		</availability>
+	</supports>
+
+	<source available="false">
+		<location type="">.</location>
+	</source>
+	<GroupOwner>os</GroupOwner>
+
+	<contents>
+		<component id="mx35" generated="true">
+			<location basedir="{cpu}/dll{.:endian}"
+				 runtime="true">devn-mx35.so</location>
+		</component>
+	</contents>
+
+	<requires>
+		<part build="true" location="lib/drvr"/>
+		<part build="false" location="hardware/devn"/>
+	</requires>
+
+</module>

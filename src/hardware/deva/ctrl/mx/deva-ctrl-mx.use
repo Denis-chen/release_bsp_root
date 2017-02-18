@@ -1,0 +1,26 @@
+%C - SSI Sound driver for Freescale i.MX SOC family
+
+This is a DLL of the io-audio system.
+
+command:
+
+   io-audio [-d mx-[variant] [driver_options]] [-o opt[, opt[, opt]]] [v[v]...]]
+
+driver_options:
+
+ssibase = [#]; base address of ssi controller
+tevt    = [#]; ssi TX DMA event number
+tchn    = [#]; ssi TX channel number
+revt    = [#]; ssi RX DMA event number
+rchn    = [#]; ssi RX channel number
+rate    = [#]; ssi audio sample rate
+mixer = [info:[mixer option1]:[mixer options2][:[other options]]]
+   mixer=info to display the details of mixer options
+
+example:
+   # Start audio driver on SSI 1 port for MX35 PDK board 
+   io-audio -d mx-mx35pdk ssibase=0x43fa0000,tevt=29,tchn=1,revt=28,rchn=2,rate=48000,mixer=i2cdev=0:adr0cs=0:mclk=12288000
+
+   # Start audio driver on SSI 1 port for MX25 3DS board
+   io-audio -d mx-3dsmx25 ssibase=0x50034000,tevt=29,tchn=3,revt=28,rchn=4,rate=48000,mixer=i2cdev=0:adr0cs=0:mclk=12288000
+   

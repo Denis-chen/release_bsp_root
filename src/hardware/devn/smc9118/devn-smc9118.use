@@ -1,0 +1,29 @@
+%C Driver for SMC9118 Ethernet controllers
+
+Syntax:
+  io-net -d smc9118 [option[,option ...]] ... &
+
+Options (to override autodetected defaults):
+  connector=0|1|2     Network cable connector type: 0 BNC, 1 UTP, 2 AUI
+  duplex=0|1          Force Half (0) or full (1) duplex mode. 
+  iftype=num          Interface type. <net/if_types.h> (default IFT_ETHER)
+  ioport=0xXXXXXXXX   IO Base address for MAC
+  irq=num             IRQ of the interface. 
+  lan=num             LAN number.
+  mac=XXXXXXXXXXXX    MAC address of the controller. 
+  media=num           Media type <hw/nicinfo.h> (default NIC_MEDIA_802_3)
+  mru=num             Maximum receive unit (default: 1514)
+  mtu=num             Maximum transmission unit (default 1514).
+  nomulticast         Disable multicast support.
+  priority=N          Priority of the driver event thread (default 21).
+  promiscuous         Enable promiscuous mode.
+  speed=10|100        Force media data rate.
+  txfifo=N            Specify Tx FIFO size in Kilobyte (default 4).
+  uptype=name         Interface name (default "en").
+  verbose=N           Set verbosity level (default 0).
+
+Examples:
+  # Start io-net using the SMC9118 driver and the full TCP/IP stack: 
+  io-net -dsmc9118 ioport=0x15800000,irq=6 -p tcpip
+  ifconfig en0 10.184
+

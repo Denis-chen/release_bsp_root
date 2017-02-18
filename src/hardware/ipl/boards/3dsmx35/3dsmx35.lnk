@@ -1,0 +1,26 @@
+TARGET(elf32-littlearm)
+OUTPUT_FORMAT(elf32-littlearm)
+ENTRY(_start)
+MEMORY
+{
+	stack	:	ORIGIN = 0x87040000,	LENGTH = 0x21000
+	ram		:	ORIGIN = 0x87061000,	LENGTH = 0x3E000
+	rom		:	ORIGIN = 0xa0000000,	LENGTH = 0x26000
+}
+
+SECTIONS
+{
+	.text : {	*(.text)
+				*(.rodata*)
+				*(.glue_7)
+				*(.glue_7t)
+			} > rom
+	_etext = .;
+	.data : {	*(.data)
+				*(.sdata)
+			} > ram
+	.bss  : {
+				*(.bss)
+				*(.sbss)
+			} > ram
+}
